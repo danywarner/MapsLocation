@@ -17,12 +17,18 @@ class LocationVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
     let regionRadius: CLLocationDistance = 1000
     let locationManager  = CLLocationManager()
     
+    let addresses = ["Cra. 112a #74A-25,Bogotá", "Calle 77,Esq. Carrera 112,Bogotá", "Cl 72F #112-12,Bogotá"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         map.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
       
+        for add in addresses {
+            getPlacemarkFromAddress(add)
+            
+        }
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -64,6 +70,35 @@ class LocationVC: UIViewController, UITableViewDelegate, UITableViewDataSource, 
         }
     }
     
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        if annotation.isKindOfClass(MapsAnnotation) {
+            let annoView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "Default")
+            annoView.pinTintColor = UIColor.yellowColor()
+            annoView.animatesDrop = true
+            return annoView
+        } else if annotation.isKindOfClass(MKUserLocation){
+            return nil
+        }
+        return nil
+    }
+    
+    func createAnnotationForLocation(location: CLLocation) {
+        let mapsan = MapsAnnotation(coordinate: location.coordinate)
+        map.addAnnotation(mapsan)
+    }
+    
+    func getPlacemarkFromAddress(address: String) {
+        CLGeocoder().geocodeAddressString(address) { (placemarks: [CLPlacemark]?, error: NSError?) -> Void in
+            if let marks = placemarks where marks.count > 0 {
+                if let loc = marks[0].location {
+                    //we have a valid location with coordinates
+                    self.createAnnotationForLocation(loc)
+                }
+            }
+        }
+    }
+
 }
 
 
